@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Search Assistant</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #2d3748; min-height: 100vh; }
+
+.header { background: #1B2A4A; color: white; padding: 24px 32px; }
+.header h1 { font-size: 20px; font-weight: 700; }
+.header p { font-size: 13px; opacity: 0.65; margin-top: 4px; }
+
+.container { max-width: 720px; margin: 0 auto; padding: 28px 16px; }
+
+.card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.card-title { font-size: 15px; font-weight: 700; color: #1B2A4A; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.step-num { background: #2A7F6F; color: white; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+
+label { display: block; font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 5px; margin-top: 14px; text-transform: uppercase; letter-spacing: 0.03em; }
+label:first-of-type { margin-top: 0; }
+
+input, textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 7px; font-size: 13.5px; font-family: inherit; color: #2d3748; background: #fafafa; transition: border-color 0.2s; resize: vertical; }
+input:focus, textarea:focus { outline: none; border-color: #2A7F6F; background: white; }
+textarea { min-height: 80px; }
+
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 20px; border-radius: 7px; font-size: 13.5px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; font-family: inherit; }
+.btn-green { background: #2A7F6F; color: white; }
+.btn-green:hover { background: #1f6b5c; }
+.btn-green:disabled { background: #a0aec0; cursor: not-allowed; }
+.btn-navy { background: #1B2A4A; color: white; }
+.btn-navy:hover { background: #2d3f6b; }
+.btn-outline { background: white; color: #1B2A4A; border: 1.5px solid #1B2A4A; }
+.btn-outline:hover { background: #eef1f8; }
+.btn-row { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+
+.hidden { display: none !important; }
+
+.loading { display: flex; align-items: center; gap: 10px; color: #718096; font-size: 13.5px; padding: 14px 0; }
+.spin { width: 18px; height: 18px; border: 2px solid #e2e8f0; border-top-color: #2A7F6F; border-radius: 50%; animation: spin 0.75s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.result { border-radius: 9px; padding: 18px; margin-top: 14px; }
+.result.green { background: #f0fff4; border: 1.5px solid #68d391; }
+.result.yellow { background: #fffff0; border: 1.5px solid #ecc94b; }
+.result.red { background: #fff5f5; border: 1.5px solid #fc8181; }
+
+.verdict-label { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+.verdict-label.apply { color: #22543d; }
+.verdict-label.consider { color: #744210; }
+.verdict-label.skip { color: #822727; }
+
+.analysis { font-size: 13.5px; line-height: 1.75; color: #2d3748; white-space: pre-wrap; }
+
+.resume-box { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 7px; padding: 16px; font-size: 13px; line-height: 1.75; white-space: pre-wrap; max-height: 400px; overflow-y: auto; color: #2d3748; margin-top: 12px; }
+
+.profile-pill { background: #eef1f8; border-radius: 7px; padding: 12px 14px; font-size: 13px; line-height: 1.65; color: #2d3748; margin-bottom: 16px; }
+
+.tip { background: #ebf8ff; border-left: 3px solid #63b3ed; padding: 9px 13px; border-radius: 0 6px 6px 0; font-size: 12.5px; color: #2a69ac; margin-top: 10px; }
+
+hr.divider { border: none; border-top: 1px solid #e2e8f0; margin: 18px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Job Search Assistant</h1>
+  <p>Assess role fit and generate tailored resume content — powered by Claude</p>
+</div>
+
+<div class="container">
+
+  <!-- STEP 1: PROFILE -->
+  <div id="step1">
+    <div class="card">
+      <div class="card-title"><span class="step-num">1</span> Tell me about yourself</div>
+      <p style="font-size:13px;color:#4a5568;margin-bottom:14px">Write naturally — describe your background, what you're best at, what you want next, and what you won't do. The more honest and specific, the better the assessments.</p>
+
+      <label>Your name</label>
+      <input id="s_name" placeholder="Alex Johnson">
+
+      <label>Your background, goals, values, and constraints</label>
+      <textarea id="s_dump" style="min-height:200px" placeholder="I'm a product operations manager with 6 years in health tech. My strongest work has been building operational systems from scratch, managing cross-functional programs, and using AI tools like Claude daily to automate workflows. I have an MPH and came to tech through public health.
+
+I want my next role to have real ownership and a small team where my work is visible. I care about mission — ideally women's health, maternal health, or clinical AI. I don't want pure analytics roles or anything in surveillance tech. I'm looking for at least $130K. I prefer remote or Boston hybrid. I have a young child so work-life balance matters."></textarea>
+
+      <div class="btn-row">
+        <button class="btn btn-green" onclick="saveProfile()">Build my profile →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: JOB ASSESSMENT -->
+  <div id="step2" class="hidden">
+    <div class="card">
+      <div class="card-title"><span class="step-num">2</span> Paste a job description</div>
+      <div class="profile-pill" id="profilePill"></div>
+      <div class="tip">Paste the full JD below. The more complete it is, the sharper the assessment.</div>
+      <label style="margin-top:14px">Job description</label>
+      <textarea id="s_jd" style="min-height:220px" placeholder="Paste the full job description here..."></textarea>
+      <div class="btn-row">
+        <button class="btn btn-green" id="assessBtn" onclick="assess()">Assess this role →</button>
+        <button class="btn btn-outline" onclick="editProfile()">Edit my profile</button>
+      </div>
+    </div>
+
+    <div id="resultCard" class="hidden">
+      <div class="card">
+        <div class="card-title"><span class="step-num">3</span> Fit assessment</div>
+        <div id="loadAssess" class="loading hidden"><div class="spin"></div>Analyzing role fit...</div>
+        <div id="assessOut"></div>
+        <div id="resumeZone" class="hidden">
+          <hr class="divider">
+          <div id="loadResume" class="loading hidden"><div class="spin"></div>Generating tailored resume content...</div>
+          <div id="resumeOut" class="hidden">
+            <div style="font-size:14px;font-weight:700;color:#1B2A4A;margin-bottom:6px">Tailored resume content</div>
+            <div style="font-size:12px;color:#718096;margin-bottom:10px">Copy this into your resume template. Sections are ready to paste.</div>
+            <div id="resumeText" class="resume-box"></div>
+            <div class="btn-row">
+              <button class="btn btn-navy" onclick="copyR()">Copy resume content</button>
+              <button class="btn btn-outline" onclick="resetJob()">Assess another role</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let P = {};
+let lastAssess = '';
+
+async function callClaude(messages, maxTokens = 1200) {
+  const res = await fetch('/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages, max_tokens: maxTokens })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Request failed (${res.status})`);
+  }
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+function saveProfile() {
+  const name = document.getElementById('s_name').value.trim();
+  const dump = document.getElementById('s_dump').value.trim();
+  if (!name || !dump) { alert('Please enter your name and background.'); return; }
+  P = { name, dump };
+  const preview = dump.length > 280 ? dump.substring(0, 280) + '...' : dump;
+  document.getElementById('profilePill').innerHTML =
+    `<strong>${name}</strong><br><span style="color:#4a5568;font-size:12.5px">${preview}</span>`;
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+}
+
+function editProfile() {
+  document.getElementById('step1').classList.remove('hidden');
+  document.getElementById('step2').classList.add('hidden');
+}
+
+async function assess() {
+  const jd = document.getElementById('s_jd').value.trim();
+  if (!jd) { alert('Please paste a job description.'); return; }
+
+  document.getElementById('resultCard').classList.remove('hidden');
+  document.getElementById('assessOut').innerHTML = '';
+  document.getElementById('resumeZone').classList.add('hidden');
+  document.getElementById('loadAssess').classList.remove('hidden');
+  document.getElementById('assessBtn').disabled = true;
+
+  const prompt = `You are a direct, honest job search advisor assessing a role for ${P.name}.
+
+CANDIDATE BACKGROUND AND GOALS (in their own words):
+${P.dump}
+
+JOB DESCRIPTION:
+${jd}
+
+Assess this role honestly. Use this exact structure:
+
+VERDICT: [APPLY / CONSIDER / SKIP]
+
+FIT SCORE: [X/10]
+
+STRONGEST MATCHES:
+• [specific reason this maps to their background]
+• [another match]
+• [third if applicable]
+
+HONEST GAPS:
+• [real gap — be direct, do not soften]
+• [another gap if relevant]
+
+MISSION AND CULTURE FIT:
+[1-2 sentences on whether this aligns with what they said they want]
+
+DESIRED SALARY CHECK:
+[Note if salary is listed and whether it meets what they mentioned, or flag if unknown]
+
+BOTTOM LINE:
+[2-3 sentences of direct, honest advice. Do not recommend applying to poor fits.]`;
+
+  try {
+    const text = await callClaude([{ role: 'user', content: prompt }]);
+    lastAssess = text;
+
+    document.getElementById('loadAssess').classList.add('hidden');
+    document.getElementById('assessBtn').disabled = false;
+
+    const v = text.includes('VERDICT: APPLY') ? 'apply' : text.includes('VERDICT: CONSIDER') ? 'consider' : 'skip';
+    const cls = v === 'apply' ? 'green' : v === 'consider' ? 'yellow' : 'red';
+    const icon = v === 'apply' ? '✓ Apply' : v === 'consider' ? '~ Consider carefully' : '✗ Skip this one';
+
+    document.getElementById('assessOut').innerHTML = `
+      <div class="result ${cls}">
+        <div class="verdict-label ${v}">${icon}</div>
+        <div class="analysis">${text.replace(/VERDICT:.*\n/, '').trim()}</div>
+      </div>
+      <div class="btn-row">
+        ${v !== 'skip' ? `<button class="btn btn-navy" onclick="genResume()">Generate tailored resume →</button>` : ''}
+        <button class="btn btn-outline" onclick="resetJob()">Try another role</button>
+      </div>`;
+  } catch(e) {
+    document.getElementById('loadAssess').classList.add('hidden');
+    document.getElementById('assessBtn').disabled = false;
+    document.getElementById('assessOut').innerHTML = `<p style="color:#c53030;font-size:13px">Error: ${e.message}</p>`;
+  }
+}
+
+async function genResume() {
+  document.getElementById('resumeZone').classList.remove('hidden');
+  document.getElementById('loadResume').classList.remove('hidden');
+  document.getElementById('resumeOut').classList.add('hidden');
+
+  const jd = document.getElementById('s_jd').value.trim();
+
+  const prompt = `You are writing tailored resume content for ${P.name}.
+
+CANDIDATE BACKGROUND (in their own words):
+${P.dump}
+
+JOB DESCRIPTION:
+${jd}
+
+ROLE ASSESSMENT:
+${lastAssess}
+
+Write resume content tailored to this specific role. Do not invent experience the candidate did not describe. Mirror the JD's language where genuine.
+
+---
+PROFESSIONAL SUMMARY
+[3-4 sentences. Lead with their strongest credential for this role. Mirror the JD's language naturally.]
+
+---
+SKILLS
+[10-14 relevant skills, comma-separated. Prioritize what this role needs. Use exact JD terminology where accurate.]
+
+---
+EXPERIENCE BULLETS — MOST RECENT ROLE
+[6-8 bullets tailored to this JD. Active verbs. Quantify where background mentions metrics. Each 1-2 sentences.]
+
+---
+COVER LETTER ANGLES
+[3 specific angles based on genuine connections between their background and this role.]
+---`;
+
+  try {
+    const text = await callClaude([{ role: 'user', content: prompt }], 1400);
+    document.getElementById('loadResume').classList.add('hidden');
+    document.getElementById('resumeOut').classList.remove('hidden');
+    document.getElementById('resumeText').textContent = text;
+  } catch(e) {
+    document.getElementById('loadResume').classList.add('hidden');
+    document.getElementById('resumeOut').classList.remove('hidden');
+    document.getElementById('resumeText').textContent = `Error: ${e.message}`;
+  }
+}
+
+function copyR() {
+  navigator.clipboard.writeText(document.getElementById('resumeText').textContent)
+    .then(() => { const b = event.target; b.textContent = 'Copied!'; setTimeout(() => b.textContent = 'Copy resume content', 2000); });
+}
+
+function resetJob() {
+  document.getElementById('s_jd').value = '';
+  document.getElementById('resultCard').classList.add('hidden');
+  document.getElementById('resumeZone').classList.add('hidden');
+  window.scrollTo(0, 200);
+}
+</script>
+</body>
+</html>
