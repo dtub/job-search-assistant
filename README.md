@@ -4,47 +4,49 @@ An AI-powered job search tool that assesses role fit and generates tailored resu
 
 ## What it does
 
-1. You describe your background, goals, and constraints in plain text
+1. Describe your background, goals, and constraints in plain text
 2. Paste any job description
 3. Get an honest fit assessment (APPLY / CONSIDER / SKIP) with a score and reasoning
 4. If recommended, generate tailored resume content and cover letter angles in one click
 
 ## Setup (takes about 20 minutes)
 
-### 1. Fork or clone this repo
+### 1. Create or fork this GitHub repo
 
-```bash
-git clone https://github.com/YOUR_USERNAME/job-search-assistant
-cd job-search-assistant
+Make sure your repo contains these three files:
+```
+README.md
+api/claude.js
+public/index.html
 ```
 
-### 2. Create a Netlify account
+### 2. Create a Vercel account
 
-Go to [netlify.com](https://netlify.com) and sign up for free.
+Go to [vercel.com](https://vercel.com) and sign up for free.
 
-### 3. Connect your GitHub repo to Netlify
+### 3. Connect your GitHub repo to Vercel
 
-- In Netlify dashboard: **Add new site → Import an existing project**
+- In Vercel dashboard: **Add New Project → Import Git Repository**
 - Connect GitHub and select this repo
-- Build settings will be auto-detected from `netlify.toml`
-- Click **Deploy site**
+- Leave all build settings as default
+- Click **Deploy**
 
 ### 4. Add your Anthropic API key
 
-- In Netlify dashboard: **Site configuration → Environment variables**
-- Click **Add a variable**
-- Key: `ANTHROPIC_API_KEY`
+- In Vercel dashboard: go to your project → **Settings → Environment Variables**
+- Click **Add**
+- Name: `ANTHROPIC_API_KEY`
 - Value: your API key from [console.anthropic.com](https://console.anthropic.com)
 - Click **Save**
-- Go to **Deploys → Trigger deploy** to redeploy with the new variable
+- Go to **Deployments → Redeploy** to apply the new variable
 
 ### 5. Share your URL
 
-Netlify gives you a URL like `https://your-site-name.netlify.app`. Share it with anyone — no setup needed on their end.
+Vercel gives you a URL like `https://your-project-name.vercel.app`. Share it with anyone — no setup needed on their end.
 
 ## Cost
 
-- Netlify: Free tier (125k function invocations/month)
+- Vercel: Free tier (100GB bandwidth/month, generous function limits)
 - Anthropic API: ~$0.01-0.03 per assessment (Claude Sonnet pricing)
 
 ## File structure
@@ -52,14 +54,12 @@ Netlify gives you a URL like `https://your-site-name.netlify.app`. Share it with
 ```
 job-search-assistant/
 ├── public/
-│   └── index.html          # The app
-├── netlify/
-│   └── functions/
-│       └── claude.js       # Serverless proxy for Anthropic API
-├── netlify.toml            # Netlify config
+│   └── index.html      # The app
+├── api/
+│   └── claude.js       # Serverless proxy for Anthropic API
 └── README.md
 ```
 
 ## Customization
 
-To update the model or tweak prompts, edit `netlify/functions/claude.js` and `public/index.html`.
+To update the model or tweak prompts, edit `api/claude.js` and `public/index.html`.
