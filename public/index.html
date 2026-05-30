@@ -142,6 +142,7 @@ hr.divider { border: none; border-top: 1px solid #e2e8f0; margin: 18px 0; }
       <div class="btn-row">
         <button class="btn btn-green" onclick="saveProfile()">Save and continue →</button>
       </div>
+      <p style="font-size:12px;color:#a0aec0;margin-top:10px">Your profile will be saved on this device so you don't have to re-enter it next time.</p>
     </div>
   </div>
 
@@ -242,6 +243,13 @@ function saveProfile() {
     resume: resumeText
   };
 
+  // Save to localStorage so it persists on this device
+  try { localStorage.setItem('jsa_profile', JSON.stringify(P)); } catch(e) {}
+
+  showStep2();
+}
+
+function showStep2() {
   const salLine = P.sal ? ` · Desired salary: $${parseInt(P.sal).toLocaleString()}` : '';
   document.getElementById('profilePill').innerHTML =
     `<strong>${P.name}</strong>${salLine}<br>
@@ -256,6 +264,26 @@ function editProfile() {
   document.getElementById('step1').classList.remove('hidden');
   document.getElementById('step2').classList.add('hidden');
 }
+
+// On page load, restore saved profile if it exists
+window.addEventListener('DOMContentLoaded', function() {
+  try {
+    const saved = localStorage.getItem('jsa_profile');
+    if (saved) {
+      P = JSON.parse(saved);
+      document.getElementById('s_name').value = P.name || '';
+      document.getElementById('s_bg').value = P.bg || '';
+      document.getElementById('s_skills').value = P.skills || '';
+      document.getElementById('s_goals').value = P.goals || '';
+      document.getElementById('s_sal').value = P.sal || '';
+      document.getElementById('s_nope').value = P.nope || '';
+      // Auto-advance to step 2 if profile is complete
+      if (P.name && P.bg && P.goals) {
+        showStep2();
+      }
+    }
+  } catch(e) {}
+});
 
 async function assess() {
   const jd = document.getElementById('s_jd').value.trim();
