@@ -317,21 +317,19 @@ Do not recommend applying if there are disqualifying gaps. Respond using EXACTLY
 VERDICT: [APPLY / CONSIDER / SKIP]
 SCORE: [X/10]
 SUMMARY_CHECKS:
-[For each check below, directly reference what the candidate said they want in their goals. Be specific — name the thing they said they wanted and whether this role delivers it or not.]
-✅ or ❌ Role type: [does this match the role type they described? max 8 words]
-✅ or ❌ Company size/culture: [does this match their small team / ownership preference? max 8 words]
-✅ or ❌ Mission: [does this match the mission/domain they said matters to them? max 8 words]
-✅ or ❌ Salary: [does listed salary meet their target, or unknown? max 8 words]
-✅ or ❌ Experience fit: [do they meet the core requirements? max 8 words]
-END_SUMMARY
+Write exactly these 8 lines and nothing else after SCORE:
 
-DETAIL:
-💪 Why you fit: [1 sentence. Most relevant experience that maps to this role.]
-⚠️ Biggest concern: [1 sentence. The single most important gap or risk. Be direct.]
-💡 Bottom line: [1 sentence. If applying, what to lead with. If skipping, why.]`;
+✅ or ❌ Role type: [max 8 words — does role title match what they want?]
+✅ or ❌ Company: [max 8 words — size, culture, mission match?]
+✅ or ❌ Mission: [max 8 words — domain aligns with their stated interests?]
+✅ or ❌ Salary: [max 8 words — listed range vs their target, or unknown?]
+✅ or ❌ Experience: [max 8 words — do they meet core requirements?]
+💪 Fit: [1 sentence — their strongest match to this specific role]
+⚠️ Gap: [1 sentence — single most important concern, be direct]
+💡 Do this: [1 sentence — if apply, what to lead with; if skip, exactly why]`;
 
   try {
-    const text = await callClaude([{ role: 'user', content: prompt }]);
+    const text = await callClaude([{ role: 'user', content: prompt }], 1800);
     lastAssess = text;
     document.getElementById('loadAssess').classList.add('hidden');
     document.getElementById('assessBtn').disabled = false;
