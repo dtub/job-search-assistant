@@ -173,7 +173,8 @@ hr.divider { border: none; border-top: 1px solid #e2e8f0; margin: 18px 0; }
             <div style="font-size:12px;color:#718096;margin-bottom:10px">Copy this into your resume template. Sections are ready to paste.</div>
             <div id="resumeText" class="resume-box"></div>
             <div class="btn-row">
-              <button class="btn btn-navy" onclick="copyR()">Copy resume content</button>
+              <button class="btn btn-navy" onclick="copyR()">Copy to clipboard</button>
+              <button class="btn btn-outline" onclick="downloadR()">Download .txt</button>
               <button class="btn btn-outline" onclick="resetJob()">Assess another role</button>
             </div>
           </div>
@@ -467,7 +468,7 @@ COVER LETTER ANGLES
 [2 specific angles — name a real experience and connect it to a specific JD need.]`;
 
   try {
-    const text = await callClaude([{ role: 'user', content: prompt }], 800);
+    const text = await callClaude([{ role: 'user', content: prompt }], 1200);
     document.getElementById('loadResume').classList.add('hidden');
     document.getElementById('resumeOut').classList.remove('hidden');
     document.getElementById('resumeText').textContent = text;
