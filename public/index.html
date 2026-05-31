@@ -341,34 +341,45 @@ DETAIL:
     const cls = v === 'apply' ? 'green' : v === 'consider' ? 'yellow' : 'red';
     const icon = v === 'apply' ? '✓ Apply' : v === 'consider' ? '~ Consider carefully' : '✗ Skip this one';
 
-    // Extract score
-    const scoreMatch = text.match(/SCORE:\s*(\d+)/);
+    // Extract score - flexible match
+    const scoreMatch = text.match(/SCORE[:\s]+(\d+)/i);
     const score = scoreMatch ? scoreMatch[1] : '?';
 
-    // Extract checks between SUMMARY_CHECKS and END_SUMMARY
-    const summaryMatch = text.match(/SUMMARY_CHECKS:[\s\S]*?\n([\s\S]*?)END_SUMMARY/);
+    // Extract all emoji check lines anywhere in the text
+    const allLines = text.split('\n');
+    const checkLines = allLines.filter(l => l.includes('✅') || l.includes('❌'));
     let checksHTML = '';
-    if (summaryMatch) {
-      const lines = summaryMatch[1].trim().split('\n').filter(l => l.trim() && (l.includes('✅') || l.includes('❌')));
-      checksHTML = lines.map(line => {
+    if (checkLines.length > 0) {
+      checksHTML = checkLines.map(line => {
         const isGood = line.includes('✅');
         const bg = isGood ? '#f0fff4' : '#fff5f5';
         const color = isGood ? '#276749' : '#9b2335';
         const border = isGood ? '#c6f6d5' : '#fed7d7';
-        // Clean the line — remove label prefix like "Role type: " for cleaner display
         const cleaned = line.trim();
-        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;margin-bottom:5px;background:${bg};border:1px solid ${border};border-radius:6px;font-size:13px;color:${color};font-weight:500;line-height:1.4">${cleaned}</div>`;
+        return `<div style="padding:7px 10px;margin-bottom:5px;background:${bg};border:1px solid ${border};border-radius:6px;font-size:13px;color:${color};font-weight:500;line-height:1.4">${cleaned}</div>`;
       }).join('');
     }
 
-    // Extract detail lines
-    const detailMatch = text.match(/DETAIL:[\s\S]*?\n([\s\S]*?)$/);
+    // Extract detail lines — anything with 💪 ⚠️ 💡 emoji
+    const detailLines = allLines.filter(l => l.includes('💪') || l.includes('⚠️') || l.includes('💡'));
     let detailHTML = '';
-    if (detailMatch) {
-      const lines = detailMatch[1].trim().split('\n').filter(l => l.trim());
-      detailHTML = lines.map(line => {
-        return `<div style="font-size:13px;color:#2d3748;line-height:1.6;padding:5px 0;border-bottom:1px solid #f0f0f0">${line.trim()}</div>`;
+    if (detailLines.length > 0) {
+      detailHTML = detailLines.map(line => {
+        return `<div style="font-size:13px;color:#2d3748;line-height:1.6;padding:6px 0;border-bottom:1px solid #f0f4f8">${line.trim()}</div>`;
       }).join('');
+    } else {
+      // Fallback: show DETAIL section as plain text
+      const detailMatch = text.match(/DETAIL[:\s\S]*?\n([\s\S]*?)$/i);
+      if (detailMatch) {
+        const dLines = detailMatch[1].trim().split('\n').filter(l => l.trim() && !l.match(/^(VERDICT|SCORE|SUMMARY|END_SUMMARY)/i));
+        detailHTML = dLines.map(line => `<div style="font-size:13px;color:#2d3748;line-height:1.6;padding:6px 0;border-bottom:1px solid #f0f4f8">${line.trim()}</div>`).join('');
+      }
+    }
+
+    // If nothing parsed, show raw text as fallback
+    if (!checksHTML && !detailHTML) {
+      const cleaned = text.replace(/VERDICT:.*\n/,'').replace(/SCORE:.*\n/,'').replace(/SUMMARY_CHECKS:/g,'').replace(/END_SUMMARY/g,'').replace(/DETAIL:/g,'').trim();
+      detailHTML = `<div style="font-size:13px;color:#2d3748;line-height:1.7;white-space:pre-wrap">${cleaned}</div>`;
     }
 
     document.getElementById('assessOut').innerHTML = `
