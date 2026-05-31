@@ -312,29 +312,24 @@ Hard constraints: ${P.nope || 'None specified'}${resumeSection}
 JOB DESCRIPTION:
 ${jd}
 
-Do not recommend applying if there are disqualifying gaps such as missing required years of experience, wrong domain, or hard constraint violated. Respond using EXACTLY this structure:
+Do not recommend applying if there are disqualifying gaps. Respond using EXACTLY this structure with no extra commentary:
 
 VERDICT: [APPLY / CONSIDER / SKIP]
+SCORE: [X/10]
+SUMMARY_CHECKS:
+[For each check below, directly reference what the candidate said they want in their goals. Be specific — name the thing they said they wanted and whether this role delivers it or not.]
+✅ or ❌ Role type: [does this match the role type they described? max 8 words]
+✅ or ❌ Company size/culture: [does this match their small team / ownership preference? max 8 words]
+✅ or ❌ Mission: [does this match the mission/domain they said matters to them? max 8 words]
+✅ or ❌ Salary: [does listed salary meet their target, or unknown? max 8 words]
+✅ or ❌ Experience fit: [do they meet the core requirements? max 8 words]
+END_SUMMARY
 
-FIT SCORE: [X/10]
-
-STRONGEST MATCHES:
-• [specific match — name the exact JD requirement and the candidate experience that maps to it]
-• [another specific match]
-• [third if applicable]
-
-HONEST GAPS:
-• [specific gap — name the exact JD requirement and what the candidate lacks. Do not soften.]
-• [another gap if relevant]
-
-MISSION AND CULTURE FIT:
-[1-2 sentences on alignment with their stated goals around team size, mission, ownership, and culture]
-
-DESIRED SALARY CHECK:
-[State the listed salary range if present and whether it meets their target. If not listed, flag it.]
-
-BOTTOM LINE:
-[2-3 sentences. Direct recommendation. If applying, say what to emphasize. If not, say exactly why not.]`;
+DETAIL:
+Background fit: [2 sentences on how their actual experience maps to this specific role. Name the JD requirements and the candidate experience. No hedging.]
+What they wanted vs what this is: [1-2 sentences comparing what they said they want next to what this role actually is. Be direct if there is a mismatch.]
+Biggest gap: [1 sentence naming the single most important gap or concern.]
+Bottom line: [2 sentences. If applying, say exactly what to lead with. If not, say exactly why not.]`;
 
   try {
     const text = await callClaude([{ role: 'user', content: prompt }]);
@@ -347,10 +342,35 @@ BOTTOM LINE:
     const cls = v === 'apply' ? 'green' : v === 'consider' ? 'yellow' : 'red';
     const icon = v === 'apply' ? '✓ Apply' : v === 'consider' ? '~ Consider carefully' : '✗ Skip this one';
 
+    // Extract score
+    const scoreMatch = text.match(/SCORE:\s*(\d+)\s*\/\s*10/);
+    const score = scoreMatch ? scoreMatch[1] : '?';
+
+    // Extract summary checks between SUMMARY_CHECKS: and END_SUMMARY
+    const summaryMatch = text.match(/SUMMARY_CHECKS:\n([\s\S]*?)END_SUMMARY/);
+    let checksHTML = '';
+    if (summaryMatch) {
+      const lines = summaryMatch[1].trim().split('\n').filter(l => l.trim());
+      checksHTML = lines.map(line => {
+        const isGood = line.startsWith('✅');
+        const isBad = line.startsWith('❌');
+        const color = isGood ? '#276749' : isBad ? '#9b2335' : '#4a5568';
+        return `<div style="font-size:14px;padding:4px 0;color:${color};font-weight:500">${line.trim()}</div>`;
+      }).join('');
+    }
+
+    // Extract detail section
+    const detailMatch = text.match(/DETAIL:\n([\s\S]*?)$/);
+    const detail = detailMatch ? detailMatch[1].trim() : text;
+
     document.getElementById('assessOut').innerHTML = `
       <div class="result ${cls}">
-        <div class="verdict-label ${v}">${icon}</div>
-        <div class="analysis">${text.replace(/VERDICT:.*\n/, '').trim()}</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div class="verdict-label ${v}" style="margin:0">${icon}</div>
+          <div style="font-size:13px;color:#718096;font-weight:600">${score}/10</div>
+        </div>
+        ${checksHTML ? `<div style="background:rgba(0,0,0,0.03);border-radius:7px;padding:12px 14px;margin-bottom:14px">${checksHTML}</div>` : ''}
+        <div class="analysis" style="font-size:13px">${detail}</div>
       </div>
       <div class="btn-row">
         ${v !== 'skip' ? `<button class="btn btn-navy" onclick="genResume()">Generate tailored resume →</button>` : ''}
