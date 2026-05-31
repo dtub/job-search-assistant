@@ -297,7 +297,9 @@ async function assess() {
 
   const resumeSection = P.resume ? `\nRESUME / ADDITIONAL EXPERIENCE:\n${P.resume}` : '';
 
-  const prompt = `You are a direct, honest job search advisor assessing a role for ${P.name}.
+  const prompt = `You are a sharp, experienced career advisor who has helped thousands of people navigate job searches. You are known for being honest even when it is uncomfortable, specific rather than generic, and never wasting someone's time with vague advice. You give the kind of feedback a trusted mentor would give — direct, grounded in reality, and genuinely useful.
+
+You are assessing whether ${P.name} should apply for this role. Do not hedge. Do not be diplomatic about gaps. Do not use vague language like "it seems," "it appears," "you might want to consider," or "this could potentially be a fit." Either it is or it is not. Say which and why.
 
 CANDIDATE PROFILE:
 Name: ${P.name}
@@ -310,29 +312,29 @@ Hard constraints: ${P.nope || 'None specified'}${resumeSection}
 JOB DESCRIPTION:
 ${jd}
 
-Assess this role honestly. Use this exact structure:
+Do not recommend applying if there are disqualifying gaps such as missing required years of experience, wrong domain, or hard constraint violated. Respond using EXACTLY this structure:
 
 VERDICT: [APPLY / CONSIDER / SKIP]
 
 FIT SCORE: [X/10]
 
 STRONGEST MATCHES:
-• [specific reason this maps to their background]
-• [another match]
+• [specific match — name the exact JD requirement and the candidate experience that maps to it]
+• [another specific match]
 • [third if applicable]
 
 HONEST GAPS:
-• [real gap — be direct, do not soften]
+• [specific gap — name the exact JD requirement and what the candidate lacks. Do not soften.]
 • [another gap if relevant]
 
 MISSION AND CULTURE FIT:
-[1-2 sentences on whether this aligns with what they said they want]
+[1-2 sentences on alignment with their stated goals around team size, mission, ownership, and culture]
 
 DESIRED SALARY CHECK:
-[Note if salary is listed and whether it meets what they mentioned, or flag if unknown]
+[State the listed salary range if present and whether it meets their target. If not listed, flag it.]
 
 BOTTOM LINE:
-[2-3 sentences of direct, honest advice. Do not recommend applying to poor fits.]`;
+[2-3 sentences. Direct recommendation. If applying, say what to emphasize. If not, say exactly why not.]`;
 
   try {
     const text = await callClaude([{ role: 'user', content: prompt }]);
@@ -369,7 +371,19 @@ async function genResume() {
   const jd = document.getElementById('s_jd').value.trim();
   const resumeSection = P.resume ? `\nRESUME / ADDITIONAL EXPERIENCE:\n${P.resume}` : '';
 
-  const prompt = `You are writing tailored resume content for ${P.name}.
+  const prompt = `You are an expert resume writer and career strategist who has helped thousands of candidates land roles at top companies. You write resumes that pass ATS filters AND compel human reviewers to act. You are known for writing bullets that are specific, metric-driven, and impossible to ignore — never generic, never fluffy, never vague.
+
+You are writing tailored resume content for ${P.name}. Your output will be copied directly into their resume, so it must be polished, precise, and ready to use.
+
+EXAMPLES OF BAD BULLETS YOU NEVER WRITE:
+- "Assisted with various cross-functional initiatives to improve team efficiency"
+- "Helped support product development activities"
+- "Worked with stakeholders to deliver projects on time"
+
+EXAMPLES OF GOOD BULLETS YOU DO WRITE:
+- "Designed and implemented a QC rules engine across 300+ rules, resolving over 160K data errors and reducing post-delivery revision cycles with pharma sponsors"
+- "Led end-to-end delivery of a 3,000+ patient clinical dataset program, coordinating clinical, engineering, and data workstreams from enrollment through sponsor delivery in under 6 months"
+- "Built AI-powered workflow automations using Claude and n8n, eliminating manual sprint reporting and creating real-time cross-functional visibility into engineering delivery"
 
 CANDIDATE PROFILE:
 Background: ${P.bg}
@@ -382,23 +396,34 @@ ${jd}
 ROLE ASSESSMENT:
 ${lastAssess}
 
-Write resume content tailored to this specific role. Do not invent experience the candidate did not describe. Mirror the JD's language where genuine.
+CRITICAL RULES:
+1. Do NOT invent experience the candidate did not describe. Only use what is in their profile.
+2. ATS OPTIMIZATION: Identify the 10-15 most important keywords and phrases from the JD. These must appear naturally in the summary, skills list, and bullets. Use exact phrasing from the JD where the candidate genuinely has that experience.
+3. BULLETS: Each bullet must start with a strong action verb, include a specific outcome or metric where available, and mirror JD language. No soft language like "helped with" or "assisted in."
+4. FORMATTING: Use only plain text. No tables, no special characters, no fancy formatting. ATS systems cannot parse these.
+5. SKILLS: List only skills the candidate actually has. Use exact terminology from the JD where accurate.
+
+Write content using EXACTLY this structure:
 
 ---
 PROFESSIONAL SUMMARY
-[3-4 sentences. Lead with their strongest credential for this role. Mirror the JD's language naturally.]
+[3-4 sentences. First sentence names their strongest credential for this exact role. Naturally weave in 3-4 key JD phrases. Final sentence signals forward momentum toward this specific opportunity.]
+
+---
+ATS KEYWORDS IDENTIFIED
+[List the 10-15 most important keywords/phrases from the JD that this candidate can honestly claim — these should all appear in the content below]
 
 ---
 SKILLS
-[10-14 relevant skills, comma-separated. Prioritize what this role needs. Use exact JD terminology where accurate.]
+[12-15 skills, comma-separated. Lead with the skills most emphasized in the JD. Use exact JD terminology. Only include skills the candidate actually has.]
 
 ---
 EXPERIENCE BULLETS — MOST RECENT ROLE
-[6-8 bullets tailored to this JD. Active verbs. Quantify where background mentions metrics. Each 1-2 sentences.]
+[7-8 bullets. Each starts with a strong action verb. Each references a specific outcome, metric, or deliverable. Each mirrors JD language where genuine. No bullet should be generic — every bullet should be clearly relevant to THIS specific role.]
 
 ---
 COVER LETTER ANGLES
-[3 specific angles based on genuine connections between their background and this role.]
+[3 specific, concrete angles — not generic. Each should name a specific experience the candidate has and connect it directly to a specific need in the JD.]
 ---`;
 
   try {
