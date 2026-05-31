@@ -328,18 +328,18 @@ Hard constraints: ${P.nope || 'None specified'}${resumeSection}
 JOB DESCRIPTION:
 ${jd}
 
-Your ENTIRE response must be exactly these 10 lines. No intro. No explanation. No extra text. Just 10 lines:
+Your ENTIRE response must be exactly these 10 lines in this exact order. No intro. No explanation. No extra text. Every single line is required.
 
-VERDICT: APPLY
-SCORE: 9/10
-✅ Role type: [5 words]
-✅ Company: [5 words]
-✅ Mission: [5 words]
-✅ Salary: [5 words]
-✅ Experience: [5 words]
-💪 [one short sentence]
-⚠️ [one short sentence]
-💡 [one short sentence]`;
+Line 1: VERDICT: APPLY or CONSIDER or SKIP
+Line 2: SCORE: X/10
+Line 3: ✅ or ❌ Role type: [5 words]
+Line 4: ✅ or ❌ Company: [5 words]
+Line 5: ✅ or ❌ Mission: [5 words]
+Line 6: ✅ or ❌ Salary: [5 words]
+Line 7: ✅ or ❌ Experience: [5 words]
+Line 8: 💪 [one sentence — strongest fit reason]
+Line 9: ⚠️ [one sentence — biggest gap or concern]
+Line 10: 💡 [one sentence — what to lead with if applying, or why to skip]`;
 
   try {
     const text = await callClaude([{ role: 'user', content: prompt }], 1800);
