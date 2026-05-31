@@ -209,12 +209,28 @@ function handleFile(e) {
   reader.readAsText(file);
 }
 
-async function callClaude(messages, maxTokens = 1200) {
+async function callClaude(messages, maxTokens = 1200, attempt = 1) {
   const res = await fetch('/api/claude', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages, max_tokens: maxTokens })
   });
+
+  if (res.status === 429 && attempt <= 3) {
+    // Rate limited — wait and retry automatically
+    const waitSec = attempt * 20;
+    const loadEl = document.getElementById('loadAssess');
+    const loadResumeEl = document.getElementById('loadResume');
+    const activeLoader = loadResumeEl && !loadResumeEl.classList.contains('hidden') ? loadResumeEl : loadEl;
+    if (activeLoader) {
+      const spin = activeLoader.querySelector('.spin');
+      const origText = activeLoader.textContent.trim();
+      activeLoader.innerHTML = `<div class="spin"></div>Rate limit hit — retrying in ${waitSec}s...`;
+    }
+    await new Promise(r => setTimeout(r, waitSec * 1000));
+    return callClaude(messages, maxTokens, attempt + 1);
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || `Request failed (${res.status})`);
@@ -312,21 +328,18 @@ Hard constraints: ${P.nope || 'None specified'}${resumeSection}
 JOB DESCRIPTION:
 ${jd}
 
-Do not recommend applying if there are disqualifying gaps. Respond using EXACTLY this structure with no extra commentary:
+Your ENTIRE response must be exactly these 10 lines. No intro. No explanation. No extra text. Just 10 lines:
 
-VERDICT: [APPLY / CONSIDER / SKIP]
-SCORE: [X/10]
-SUMMARY_CHECKS:
-Write exactly these 8 lines and nothing else after SCORE:
-
-✅ or ❌ Role type: [max 8 words — does role title match what they want?]
-✅ or ❌ Company: [max 8 words — size, culture, mission match?]
-✅ or ❌ Mission: [max 8 words — domain aligns with their stated interests?]
-✅ or ❌ Salary: [max 8 words — listed range vs their target, or unknown?]
-✅ or ❌ Experience: [max 8 words — do they meet core requirements?]
-💪 Fit: [1 sentence — their strongest match to this specific role]
-⚠️ Gap: [1 sentence — single most important concern, be direct]
-💡 Do this: [1 sentence — if apply, what to lead with; if skip, exactly why]`;
+VERDICT: APPLY
+SCORE: 9/10
+✅ Role type: [5 words]
+✅ Company: [5 words]
+✅ Mission: [5 words]
+✅ Salary: [5 words]
+✅ Experience: [5 words]
+💪 [one short sentence]
+⚠️ [one short sentence]
+💡 [one short sentence]`;
 
   try {
     const text = await callClaude([{ role: 'user', content: prompt }], 1800);
