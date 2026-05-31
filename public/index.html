@@ -151,7 +151,7 @@ hr.divider { border: none; border-top: 1px solid #e2e8f0; margin: 18px 0; }
     <div class="card">
       <div class="card-title"><span class="step-num">3</span> Paste a job description</div>
       <div class="profile-pill" id="profilePill"></div>
-      <div class="tip">Paste the full JD — the more complete it is, the sharper the assessment.</div>
+      <div class="tip">Paste the full job description including the company overview at the top. The more context you give, the sharper the assessment. Most job postings include this — just paste everything.</div>
       <label style="margin-top:14px">Job description</label>
       <textarea id="s_jd" style="min-height:220px" placeholder="Paste the full job description here..."></textarea>
       <div class="btn-row">
@@ -326,10 +326,9 @@ SUMMARY_CHECKS:
 END_SUMMARY
 
 DETAIL:
-Background fit: [2 sentences on how their actual experience maps to this specific role. Name the JD requirements and the candidate experience. No hedging.]
-What they wanted vs what this is: [1-2 sentences comparing what they said they want next to what this role actually is. Be direct if there is a mismatch.]
-Biggest gap: [1 sentence naming the single most important gap or concern.]
-Bottom line: [2 sentences. If applying, say exactly what to lead with. If not, say exactly why not.]`;
+💪 Why you fit: [1 sentence. Most relevant experience that maps to this role.]
+⚠️ Biggest concern: [1 sentence. The single most important gap or risk. Be direct.]
+💡 Bottom line: [1 sentence. If applying, what to lead with. If skipping, why.]`;
 
   try {
     const text = await callClaude([{ role: 'user', content: prompt }]);
