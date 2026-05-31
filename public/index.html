@@ -453,31 +453,22 @@ CRITICAL RULES:
 4. FORMATTING: Use only plain text. No tables, no special characters, no fancy formatting. ATS systems cannot parse these.
 5. SKILLS: List only skills the candidate actually has. Use exact terminology from the JD where accurate.
 
-Write content using EXACTLY this structure:
+Write EXACTLY this structure, nothing else:
 
----
-PROFESSIONAL SUMMARY
-[3-4 sentences. First sentence names their strongest credential for this exact role. Naturally weave in 3-4 key JD phrases. Final sentence signals forward momentum toward this specific opportunity.]
+SUMMARY
+[3 sentences. Lead with strongest credential for this role. Weave in 2-3 exact JD phrases. End with forward momentum.]
 
----
-ATS KEYWORDS IDENTIFIED
-[List the 10-15 most important keywords/phrases from the JD that this candidate can honestly claim — these should all appear in the content below]
-
----
 SKILLS
-[12-15 skills, comma-separated. Lead with the skills most emphasized in the JD. Use exact JD terminology. Only include skills the candidate actually has.]
+[10 skills comma-separated. Exact JD terminology. Only what candidate actually has.]
 
----
-EXPERIENCE BULLETS — MOST RECENT ROLE
-[7-8 bullets. Each starts with a strong action verb. Each references a specific outcome, metric, or deliverable. Each mirrors JD language where genuine. No bullet should be generic — every bullet should be clearly relevant to THIS specific role.]
+BULLETS
+[5 bullets. Strong action verb. Specific outcome or metric. Mirrors JD language. Relevant to THIS role only.]
 
----
 COVER LETTER ANGLES
-[3 specific, concrete angles — not generic. Each should name a specific experience the candidate has and connect it directly to a specific need in the JD.]
----`;
+[2 specific angles — name a real experience and connect it to a specific JD need.]`;
 
   try {
-    const text = await callClaude([{ role: 'user', content: prompt }], 1400);
+    const text = await callClaude([{ role: 'user', content: prompt }], 800);
     document.getElementById('loadResume').classList.add('hidden');
     document.getElementById('resumeOut').classList.remove('hidden');
     document.getElementById('resumeText').textContent = text;
