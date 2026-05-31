@@ -342,34 +342,43 @@ DETAIL:
     const icon = v === 'apply' ? '✓ Apply' : v === 'consider' ? '~ Consider carefully' : '✗ Skip this one';
 
     // Extract score
-    const scoreMatch = text.match(/SCORE:\s*(\d+)\s*\/\s*10/);
+    const scoreMatch = text.match(/SCORE:\s*(\d+)/);
     const score = scoreMatch ? scoreMatch[1] : '?';
 
-    // Extract summary checks between SUMMARY_CHECKS: and END_SUMMARY
-    const summaryMatch = text.match(/SUMMARY_CHECKS:\n([\s\S]*?)END_SUMMARY/);
+    // Extract checks between SUMMARY_CHECKS and END_SUMMARY
+    const summaryMatch = text.match(/SUMMARY_CHECKS:[\s\S]*?\n([\s\S]*?)END_SUMMARY/);
     let checksHTML = '';
     if (summaryMatch) {
-      const lines = summaryMatch[1].trim().split('\n').filter(l => l.trim());
+      const lines = summaryMatch[1].trim().split('\n').filter(l => l.trim() && (l.includes('✅') || l.includes('❌')));
       checksHTML = lines.map(line => {
-        const isGood = line.startsWith('✅');
-        const isBad = line.startsWith('❌');
-        const color = isGood ? '#276749' : isBad ? '#9b2335' : '#4a5568';
-        return `<div style="font-size:14px;padding:4px 0;color:${color};font-weight:500">${line.trim()}</div>`;
+        const isGood = line.includes('✅');
+        const bg = isGood ? '#f0fff4' : '#fff5f5';
+        const color = isGood ? '#276749' : '#9b2335';
+        const border = isGood ? '#c6f6d5' : '#fed7d7';
+        // Clean the line — remove label prefix like "Role type: " for cleaner display
+        const cleaned = line.trim();
+        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;margin-bottom:5px;background:${bg};border:1px solid ${border};border-radius:6px;font-size:13px;color:${color};font-weight:500;line-height:1.4">${cleaned}</div>`;
       }).join('');
     }
 
-    // Extract detail section
-    const detailMatch = text.match(/DETAIL:\n([\s\S]*?)$/);
-    const detail = detailMatch ? detailMatch[1].trim() : text;
+    // Extract detail lines
+    const detailMatch = text.match(/DETAIL:[\s\S]*?\n([\s\S]*?)$/);
+    let detailHTML = '';
+    if (detailMatch) {
+      const lines = detailMatch[1].trim().split('\n').filter(l => l.trim());
+      detailHTML = lines.map(line => {
+        return `<div style="font-size:13px;color:#2d3748;line-height:1.6;padding:5px 0;border-bottom:1px solid #f0f0f0">${line.trim()}</div>`;
+      }).join('');
+    }
 
     document.getElementById('assessOut').innerHTML = `
       <div class="result ${cls}">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-          <div class="verdict-label ${v}" style="margin:0">${icon}</div>
-          <div style="font-size:13px;color:#718096;font-weight:600">${score}/10</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div class="verdict-label ${v}" style="margin:0;font-size:20px">${icon}</div>
+          <div style="background:#1B2A4A;color:white;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px">${score}/10</div>
         </div>
-        ${checksHTML ? `<div style="background:rgba(0,0,0,0.03);border-radius:7px;padding:12px 14px;margin-bottom:14px">${checksHTML}</div>` : ''}
-        <div class="analysis" style="font-size:13px">${detail}</div>
+        ${checksHTML ? `<div style="margin-bottom:14px">${checksHTML}</div>` : ''}
+        ${detailHTML ? `<div style="border-top:1px solid #e2e8f0;padding-top:12px;margin-top:4px">${detailHTML}</div>` : ''}
       </div>
       <div class="btn-row">
         ${v !== 'skip' ? `<button class="btn btn-navy" onclick="genResume()">Generate tailored resume →</button>` : ''}
